@@ -1,4 +1,5 @@
 {
+  "model": "opus[1m]",
   "hooks": {
     "SessionStart": [
       {
@@ -20,7 +21,21 @@
     "command": "input=$(cat); current_dir=$(echo \"$input\" | jq -r '.workspace.current_dir // .cwd'); total_input=$(echo \"$input\" | jq -r '.context_window.total_input_tokens // 0'); total_output=$(echo \"$input\" | jq -r '.context_window.total_output_tokens // 0'); remaining_pct=$(echo \"$input\" | jq -r '.context_window.remaining_percentage // empty'); session_name=\"${CLAUDE_SESSION_NAME:-$(echo \"$input\" | jq -r '.session_name // empty')}\"; session_id=$(echo \"$input\" | jq -r '.session_id // empty'); model=$(echo \"$input\" | jq -r '(.model.id // .model) // empty'); effort=$(echo \"$input\" | jq -r '.thinking_effort // empty'); git_branch=$(cd \"$current_dir\" 2>/dev/null && git -c core.fileMode=false branch --show-current 2>/dev/null); [ -z \"$git_branch\" ] && [ -d \"$current_dir/.git\" ] && git_branch=\"(detached)\"; total_tokens=$((total_input + total_output)); input_cost=$(echo \"scale=4; $total_input * 3 / 1000000\" | bc); output_cost=$(echo \"scale=4; $total_output * 15 / 1000000\" | bc); total_cost=$(echo \"scale=4; $input_cost + $output_cost\" | bc); dir_name=$(basename \"$current_dir\"); output=\"$(printf '\\033[36m%s\\033[0m' \"$dir_name\")\"; [ -n \"$git_branch\" ] && output=\"${output} $(printf '\\033[32m(%s)\\033[0m' \"$git_branch\")\"; if [ -n \"$session_name\" ]; then output=\"${output} $(printf '\\033[95m[%s]\\033[0m' \"$session_name\")\"; elif [ -n \"$session_id\" ]; then output=\"${output} $(printf '\\033[95m[%s]\\033[0m' \"${session_id:0:8}\")\"; fi; [ -n \"$model\" ] && output=\"${output} $(printf '\\033[96m%s\\033[0m' \"$model\")\"; [ -n \"$effort\" ] && output=\"${output} $(printf '\\033[93m%s\\033[0m' \"$effort\")\"; [ \"$total_tokens\" -gt 0 ] && output=\"${output} $(printf '\\033[33m%dK tokens\\033[0m' $((total_tokens / 1000)))\"; [ -n \"$remaining_pct\" ] && output=\"${output} $(printf '\\033[34m%s%% ctx\\033[0m' \"$remaining_pct\")\"; (( $(echo \"$total_cost > 0\" | bc -l) )) && output=\"${output} $(printf '\\033[35m$%s\\033[0m' \"$total_cost\")\"; echo \"$output\""
   },
   "enabledPlugins": {
-    "superpowers@superpowers-marketplace": true
+    "superpowers@superpowers-marketplace": true,
+    "product-data@product-data-marketplace": true,
+    "slack@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true,
+    "perf-review@product-data-marketplace": true,
+    "jdtls-lsp@claude-plugins-official": true,
+    "macos-notifications@product-data-marketplace": true
+  },
+  "extraKnownMarketplaces": {
+    "product-data-marketplace": {
+      "source": {
+        "source": "git",
+        "url": "git@git.autodesk.com:cloud-platform/product-data-marketplace.git"
+      }
+    }
   },
   "effortLevel": "high"
 }

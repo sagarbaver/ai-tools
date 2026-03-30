@@ -36,8 +36,8 @@ The system uses four layers with clear tool boundaries:
 ### Setup
 
 1. Clone this repo
-2. Copy `gtd/.notion-config.example.md` to `gtd/.notion-config.md`
-3. Populate with your own Notion page IDs
+2. Copy `gtd/.local-config.example.md` to `gtd/.local-config.md`
+3. Populate with your calendar ICS path and Notion page IDs
 4. Ensure your AI coding assistant has access to the Notion MCP server
 5. Invoke the skill with `/weekly-planner`
 

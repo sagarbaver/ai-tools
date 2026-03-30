@@ -13,7 +13,7 @@ This skill implements David Allen's Getting Things Done (GTD) five-step workflow
 - **Notion** — for reading/writing GTD pages and weekly planner pages
 
 ### Private Configuration
-- `gtd/.notion-config.md` — Notion page IDs (gitignored). Copy `gtd/.notion-config.example.md` and populate with your own page IDs.
+- `gtd/.local-config.md` — Local configuration: calendar ICS path, Notion page IDs (gitignored). Copy `gtd/.local-config.example.md` and populate with your own values.
 
 ### Public Reference
 - `gtd/gtd-system-design.md` — System architecture and GTD methodology

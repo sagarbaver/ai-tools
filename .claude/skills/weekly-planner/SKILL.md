@@ -16,9 +16,23 @@ specific days, matched to calendar availability and energy levels.
 
 ## Before Starting
 
-1. Read the Notion page IDs from `gtd/.notion-config.md` in this repository
+1. Read the local configuration from `gtd/.local-config.md` in this repository (calendar path, Notion page IDs)
 2. Greet the user and confirm which week we're planning (default: the upcoming week)
-3. Ask the user to have their Apple Notes and calendar ready
+3. **Present the prerequisite checklist below** and ask the user to prepare everything before
+   proceeding. Do NOT start Step 1 until the user confirms they have all items ready.
+
+### Prerequisite Checklist
+
+> Before we begin, please have the following ready:
+>
+> 1. **Apple Notes Inbox** — Open your "Getting Things Done - Inbox" note, ready to paste
+> 2. **Calendar export** — Export your Apple Calendar as an ICS file to the path configured in
+>    `gtd/.local-config.md` (replace the existing file with a fresh export covering the planning week)
+> 3. **Reminders** — Ask Siri / Apple Intelligence to summarize your reminders for the week and
+>    paste the summary (Apple Reminders are not included in ICS exports)
+>
+> These three inputs feed the entire session. Having them ready upfront keeps the conversation
+> cohesive.
 
 ---
 
@@ -87,12 +101,16 @@ For each active project:
 
 ## Step 3: Review Calendar (10 min)
 
-Ask the user to either:
+Read the calendar ICS path from `gtd/.local-config.md` (the user should have exported a fresh copy as
+part of the prerequisite checklist).
 
-- Paste their calendar events for the week, OR
-- Provide the path to an ICS export file
+Run the calendar parser script to generate the day-by-day summary:
 
-Parse and identify:
+```bash
+python3 .claude/skills/weekly-planner/parse_calendar.py <ics_path> <week_start_YYYYMMDD> <week_end_YYYYMMDD>
+```
+
+Review the output and identify:
 
 - **Meeting-heavy days** (>4 hours of meetings) — plan lighter personal tasks
 - **Free focus blocks** — assign deep work here
