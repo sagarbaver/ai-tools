@@ -99,7 +99,53 @@ For each active project:
 
 ---
 
-## Step 3: Review Calendar (10 min)
+## Time Budget Reference
+
+Each day has exactly **48 🍅 (24 hours)**. The Notion template defines how these are allocated.
+Fetch the Week Planner Template from Notion to get the current budgets — the values below are the
+defaults but the template is the source of truth.
+
+### Default Weekday Budget (Mon–Fri): 48 🍅
+
+| Category                    | 🍅  | Hours |
+|-----------------------------|-----|-------|
+| Sleep                       | 16  | 8h    |
+| Work                        | 11  | 5h30m |
+| Fitness                     | 3   | 1h30m |
+| Meals and breaks            | 5   | 2h30m |
+| Learning                    | 1   | 30m   |
+| Hygiene and morning routine | 2   | 1h    |
+| Relationships               | 1   | 30m   |
+| Chores                      | 4   | 2h    |
+| Buffer and Slack            | 5   | 2h30m |
+
+### Default Weekend Budget (Sat–Sun): 48 🍅
+
+| Category                          | 🍅  | Hours |
+|-----------------------------------|-----|-------|
+| Sleep                             | 16  | 8h    |
+| Learning, projects, exploration   | 5   | 2h30m |
+| Fitness, outdoors, social         | 3   | 1h30m |
+| Relationships and family          | 5   | 2h30m |
+| Meals and breaks                  | 5   | 2h30m |
+| Hygiene                           | 2   | 1h    |
+| Chores, errands, deep cleaning    | 8   | 4h    |
+| Buffer and Slack                  | 4   | 2h    |
+
+### Fixed vs. Plannable Categories
+
+**Fixed** (don't assign tasks here — these happen regardless):
+Sleep, Meals and breaks, Hygiene and morning routine
+
+**Plannable** (assign concrete tasks within these budgets):
+Work, Learning, Fitness, Relationships, Chores, Buffer/Slack
+
+Buffer/Slack is the flex pool — it absorbs overflows. If a day is overcommitted, time comes from
+Buffer first. If Buffer hits 0, surface the conflict to the user.
+
+---
+
+## Step 3: Review Calendar and Build Time Map (10 min)
 
 Read the calendar ICS path from `gtd/.local-config.md` (the user should have exported a fresh copy as
 part of the prerequisite checklist).
@@ -110,14 +156,45 @@ Run the calendar parser script to generate the day-by-day summary:
 python3 .claude/skills/weekly-planner/parse_calendar.py <ics_path> <week_start_YYYYMMDD> <week_end_YYYYMMDD>
 ```
 
-Review the output and identify:
+### 3a. Categorize Calendar Events
 
-- **Meeting-heavy days** (>4 hours of meetings) — plan lighter personal tasks
-- **Free focus blocks** — assign deep work here
-- **Personal time blocks** (from iCloud Home calendar) — respect these as defended time
-- **Conflicts** — where work overflows into personal blocks
+For each calendar event, classify it into a budget category:
 
-Present a day-by-day availability summary.
+- Work meetings, standups, 1:1s → **Work**
+- Doctor appointments, errands → **Chores** or **Personal**
+- Social events, family calls → **Relationships**
+- Gym classes, sports → **Fitness**
+- Courses, workshops → **Learning**
+
+Ask the user to confirm ambiguous classifications.
+
+### 3b. Categorize Reminders
+
+The user will have pasted their reminders in the prerequisites. For each reminder that has a
+specific day/time, classify it the same way and add it to that day's committed time.
+
+### 3c. Build the Day-by-Day Time Map
+
+For each day, produce a table showing:
+
+| Category     | Budget 🍅 | Calendar 🍅 | Remaining 🍅 |
+|--------------|-----------|-------------|--------------|
+| Work         | 11        | 6 (meetings)| 5            |
+| Learning     | 1         | 0           | 1            |
+| Fitness      | 3         | 0           | 3            |
+| Chores       | 4         | 1 (errand)  | 3            |
+| Relationships| 1         | 0           | 1            |
+| Buffer/Slack | 5         | 0           | 5            |
+| **Plannable**| **25**    | **7**       | **18**       |
+
+The **Remaining 🍅** column is what's available for task assignment in Step 4.
+
+Flag days where:
+- A category is overcommitted (calendar alone exceeds budget) — overflow comes from Buffer
+- Buffer hits 0 or goes negative — the day is overloaded, surface this to the user
+- A category has lots of remaining capacity — opportunity for deep work or catch-up
+
+Present the time maps and get user confirmation before proceeding.
 
 ---
 
@@ -133,7 +210,10 @@ Create a new page under `[1] Weekly Plans` using the template structure:
 
 ### 4b. Assign Items to Days
 
-For each day, assign tasks following these principles:
+For each day, assign tasks **within the Remaining 🍅 from the time map**. Every task gets a 🍅
+estimate. The sum of assigned tasks per category must not exceed that category's remaining capacity.
+
+**Assignment principles:**
 
 **Energy matching (David Allen's context-aware approach):**
 
@@ -150,15 +230,22 @@ Each day gets 3 themes:
 
 **Capacity rules:**
 
-- Max 3-5 items per category per day
-- Weekdays: prioritize work + one personal maintenance task
-- Weekends: prioritize chores, projects, relationships
+- Assign tasks until the category's remaining 🍅 are filled — no more
+- If a task doesn't fit today, move it to a day with capacity
+- Weekdays: prioritize Work tasks + one personal maintenance task
+- Weekends: prioritize Chores, projects, Relationships
 - Friday: lighter load, learning-focused (Focus Friday)
-- Include pomodoro estimates (🍅 = 30 min)
+- Keep at least 2 🍅 of Buffer/Slack per day when possible (flex for the unexpected)
 
 ### 4c. Present for Review
 
-Show the user the draft planner day-by-day. Ask for adjustments before committing to Notion.
+Show the user the draft planner day-by-day. For each day, include:
+
+1. The calendar events already committed
+2. The newly assigned tasks with 🍅 estimates
+3. A summary line: `Planned: X/Y 🍅 | Buffer remaining: Z 🍅`
+
+Ask for adjustments before committing to Notion.
 
 ---
 
