@@ -1,7 +1,7 @@
 ---
 name: weekly-planner
 description: Use when the user says "weekly plan", "plan my week", "Sunday review", "GTD review", "weekly planning session", or wants to process their inbox into next actions. Guides a 60-minute AI-assisted weekly planning session following the GTD methodology. Creates a Notion weekly planner page with assigned next actions, reviews recurring checklists, and processes the Apple Notes inbox.
-allowed-tools: mcp__notion__notion-fetch, mcp__notion__notion-search, mcp__notion__notion-create-pages, mcp__notion__notion-update-page, AskUserQuestion, Read, Bash(date:*), Bash(grep:*), Bash(wc:*)
+allowed-tools: mcp__notion__notion-fetch, mcp__notion__notion-search, mcp__notion__notion-create-pages, mcp__notion__notion-update-page, mcp__jira__jira_get_agile_boards, mcp__jira__jira_get_sprints_from_board, mcp__jira__jira_get_sprint_issues, mcp__jira__jira_search, AskUserQuestion, Read, Bash(date:*), Bash(grep:*), Bash(wc:*)
 ---
 
 # Weekly Planning Session (60 minutes)
@@ -55,7 +55,11 @@ For each item, classify using David Allen's Clarify workflow:
         - Decision question → Add to Notion [GTD] Decisions Backlog
         - Trash → Tell user to delete it
 
-Present the classification as a table for user approval before making any Notion changes.
+**Present items in small batches (~5 at a time).** Large tables cause cognitive overload. Show a
+batch, get the user's feedback/reclassifications, then show the next batch. Do NOT dump the entire
+inbox classification in one go.
+
+Wait for user approval on all batches before making any Notion changes.
 
 ### 1b. Review Waiting For
 
@@ -84,6 +88,9 @@ Fetch each Notion [GTD] page and check "Last Done On" dates against cadence:
 
 Surface overdue items to the user: *"[Item] was last done on [date] and is on a [cadence] schedule —
 add to this week?"*
+
+**Present overdue items in small batches (~5 at a time)**, same as the inbox. Get the user's
+decision per batch before showing the next.
 
 Let the user choose which overdue items to include this week. Not everything overdue needs to be
 done immediately.
@@ -161,6 +168,8 @@ python3 .claude/skills/weekly-planner/parse_calendar.py <ics_path> <week_start_Y
 For each calendar event, classify it into a budget category:
 
 - Work meetings, standups, 1:1s → **Work**
+- "Focus time" blocks (e.g. Microsoft Viva) → **Work** (but these are *assignable* deep work time,
+  not committed meetings — count them as available capacity for task assignment)
 - Doctor appointments, errands → **Chores** or **Personal**
 - Social events, family calls → **Relationships**
 - Gym classes, sports → **Fitness**
@@ -200,7 +209,18 @@ Present the time maps and get user confirmation before proceeding.
 
 ## Step 4: Build the Weekly Planner (20 min)
 
-### 4a. Create the Notion Page
+### 4a. Fetch Active Jira Sprint
+
+Before assigning work tasks, fetch the user's active Jira sprint to identify real deep work items:
+
+1. Find the team board using `jira_get_agile_boards`
+2. Get the active sprint using `jira_get_sprints_from_board`
+3. Search for the user's assigned issues: `assignee = currentUser() AND sprint = <id> AND status != Done`
+
+These Jira tickets are the **@DeepWork** items for the week — assign them to Focus time blocks.
+Do NOT use personal admin or non-Jira tasks as deep work.
+
+### 4b. Create the Notion Page
 
 Create a new page under `[1] Weekly Plans` using the template structure:
 
@@ -237,15 +257,18 @@ Each day gets 3 themes:
 - Friday: lighter load, learning-focused (Focus Friday)
 - Keep at least 2 🍅 of Buffer/Slack per day when possible (flex for the unexpected)
 
-### 4c. Present for Review
+### 4d. Present for Review
 
-Show the user the draft planner day-by-day. For each day, include:
+**Present the draft planner in batches of 2 days at a time.** For each day, include:
 
 1. The calendar events already committed
 2. The newly assigned tasks with 🍅 estimates
 3. A summary line: `Planned: X/Y 🍅 | Buffer remaining: Z 🍅`
 
-Ask for adjustments before committing to Notion.
+Make sure every day includes a **Fitness** block — it's easy to forget when assigning work and chores.
+Also ensure every weekday has a **Learning** block (even if ad-hoc on heavy meeting days).
+
+Ask for adjustments per batch before showing the next. Get full approval before committing to Notion.
 
 ---
 
